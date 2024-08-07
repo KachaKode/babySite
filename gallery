@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        image-gallery {
+            display: block;
+            width: 100%;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <image-gallery></image-gallery>
+
+    <script>
+        class ImageGallery extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+
+                this.container = document.createElement('div');
+                this.container.style.display = 'inline-block';
+                this.container.style.whiteSpace = 'nowrap';
+                this.container.style.height = '100%';
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    div {
+                        display: inline-block;
+                        white-space: nowrap;
+                        height: 100%;
+                        overflow: hidden;
+                    }
+                    img {
+                        height: 100%;
+                        vertical-align: top;
+                    }
+                `;
+
+                this.shadowRoot.appendChild(style);
+                this.shadowRoot.appendChild(this.container);
+
+                this.scrollSpeed = 1;
+                this.scrollMagnitude = 10; // Default magnitude
+                this.scrollFrequency = 1000; // Default frequency (1 second)
+                this.images = [];
+                this.scrollInterval = null;
+            }
+
+            static get observedAttributes() {
+                return ['images'];
+            }
+
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (name === 'images') {
+                    this.images = JSON.parse(newValue);
+                    this.updateGallery();
+                }
+            }
+
+            connectedCallback() {
+                this.updateGallery();
+                this.startScrolling();
+            }
+
+            disconnectedCallback() {
+                this.stopScrolling();
+            }
+
+            updateGallery() {
+                this.container.innerHTML = '';
+                if (this.images.length === 0) return;
+
+                // Create two sets of images for infinite scroll effect
+                const fragment = document.createDocumentFragment();
+                this.images.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    fragment.appendChild(img);
+                });
+
+                this.container.appendChild(fragment);
+                
+                // Set container width to accommodate all images
+                this.container.style.width = `${this.images.length * 200}px`; 
+            }
+
+            startScrolling() {
+                if (this.scrollInterval) {
+                    clearInterval(this.scrollInterval);
+                }
+                this.scrollInterval = setInterval(() => this.scrollImages(), this.scrollFrequency);
+            }
+
+            stopScrolling() {
+                if (this.scrollInterval) {
+                    clearInterval(this.scrollInterval);
+                }
+            }
+
+            scrollImages() {
+                const firstImage = this.container.querySelector('img');
+                const firstImageWidth = firstImage.clientWidth;
+
+                this.container.scrollLeft += this.scrollMagnitude;
+
+                if (this.container.scrollLeft >= firstImageWidth) {
+                    this.container.appendChild(firstImage);
+                    this.container.scrollLeft = 0;
+                }
+            }
+
+            setScrollSpeed(magnitude, frequency) {
+                this.scrollMagnitude = magnitude;
+                this.scrollFrequency = frequency;
+                this.startScrolling();
+            }
+        }
+
+        customElements.define('image-gallery', ImageGallery);
+
+        const gallery = document.querySelector('image-gallery');
+        gallery.setAttribute('images', JSON.stringify([
+            "https://static.wixstatic.com/media/4d52c3_1b938e64c9b6404b97cb14ada49bb07c~mv2.jpg",
+            "https://static.wixstatic.com/media/4d52c3_549822eb1293493abb55858050df9807~mv2.jpg",
+            "https://static.wixstatic.com/media/4d52c3_292c7fa42553460eb4e289e24c6c278d~mv2.jpg",
+            "https://static.wixstatic.com/media/4d52c3_ff08b197156c461a9280ff66d74b0541~mv2.png",
+            "https://static.wixstatic.com/media/4d52c3_d770b283e91744e1b51b71dfde4b08ef~mv2.jpg"
+        ]));
+
+        // Adjust scroll speed and frequency
+        gallery.setScrollSpeed(2, 25); // Move 10px every 1 second
+
+    </script>
+</body>
+</html>
