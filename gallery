@@ -8,7 +8,7 @@
         image-gallery {
             display: block;
             width: 100%;
-            height: 200px;
+            height: 300px;
             position: relative;
             overflow: hidden;
         }
@@ -76,8 +76,14 @@
                 this.container.innerHTML = '';
                 if (this.images.length === 0) return;
 
-                // Create two sets of images for infinite scroll effect
+                // create images 
                 const fragment = document.createDocumentFragment();
+                this.images.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    fragment.appendChild(img);
+                });
+                
                 this.images.forEach(url => {
                     const img = document.createElement('img');
                     img.src = url;
@@ -108,8 +114,11 @@
                 const firstImageWidth = firstImage.clientWidth;
 
                 this.container.scrollLeft += this.scrollMagnitude;
+                //console.log("hey")
 
                 if (this.container.scrollLeft >= firstImageWidth) {
+                		console.log("replacing !!!")
+                    firstImage.remove();
                     this.container.appendChild(firstImage);
                     this.container.scrollLeft = 0;
                 }
