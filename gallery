@@ -5,13 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Gallery</title>
     <style>
-        image-gallery {
-            display: block;
-            width: 100%;
-            height: 300px;
-            position: relative;
-            overflow: hidden;
-        }
+        
+
     </style>
 </head>
 <body>
@@ -22,11 +17,30 @@
             constructor() {
                 super();
                 this.attachShadow({ mode: 'open' });
+                
+                
+                this.style.display = "block";
+                this.style.width = "100%";
+                this.style.height = "300px";
+                this.style.position = "relative";
+                this.style.overflow = "hidden";
 
                 this.container = document.createElement('div');
                 this.container.style.display = 'inline-block';
                 this.container.style.whiteSpace = 'nowrap';
                 this.container.style.height = '100%';
+                
+                const docStyle = document.createElement('style');
+                /*docStyle.textContent = `
+                image-gallery {
+                    display: block;
+                    width: 100%;
+                    height: 300px;
+                    position: relative;
+                    overflow: hidden;
+                }
+                `;
+                document.appendChild(docStyle);*/
 
                 const style = document.createElement('style');
                 style.textContent = `
@@ -40,16 +54,47 @@
                         height: 100%;
                         vertical-align: top;
                     }
+                    .arrow {
+                        position: absolute;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        background-color: rgba(0, 0, 0, 0.5);
+                        color: white;
+                        border: none;
+                        padding: 10px;
+                        cursor: pointer;
+                        z-index: 10;
+                    }
+                    .left-arrow {
+                        left: 0;
+                    }
+                    .right-arrow {
+                        right: 0;
+                    }
                 `;
 
                 this.shadowRoot.appendChild(style);
                 this.shadowRoot.appendChild(this.container);
+
+                this.leftArrow = document.createElement('button');
+                this.leftArrow.className = 'arrow left-arrow';
+                this.leftArrow.textContent = '◄';
+                this.leftArrow.addEventListener('click', () => this.moveLeft());
+
+                this.rightArrow = document.createElement('button');
+                this.rightArrow.className = 'arrow right-arrow';
+                this.rightArrow.textContent = '►';
+                this.rightArrow.addEventListener('click', () => this.moveRight());
+
+                this.shadowRoot.appendChild(this.leftArrow);
+                this.shadowRoot.appendChild(this.rightArrow);
 
                 this.scrollSpeed = 1;
                 this.scrollMagnitude = 10; // Default magnitude
                 this.scrollFrequency = 1000; // Default frequency (1 second)
                 this.images = [];
                 this.scrollInterval = null;
+                this.scrollDirection = 1; // 1 for right, -1 for left
             }
 
             static get observedAttributes() {
@@ -83,7 +128,7 @@
                     img.src = url;
                     fragment.appendChild(img);
                 });
-                
+
                 this.images.forEach(url => {
                     const img = document.createElement('img');
                     img.src = url;
@@ -113,15 +158,32 @@
                 const firstImage = this.container.querySelector('img');
                 const firstImageWidth = firstImage.clientWidth;
 
-                this.container.scrollLeft += this.scrollMagnitude;
-                //console.log("hey")
+                this.container.scrollLeft += this.scrollMagnitude * this.scrollDirection;
 
-                if (this.container.scrollLeft >= firstImageWidth) {
-                		console.log("replacing !!!")
+                if (this.container.scrollLeft >= firstImageWidth || this.container.scrollLeft <= -firstImageWidth) {
                     firstImage.remove();
                     this.container.appendChild(firstImage);
                     this.container.scrollLeft = 0;
                 }
+            }
+
+            moveLeft() {
+                this.stopScrolling();
+                const lastImage = this.container.querySelector('img:last-child');
+                this.container.scrollLeft = -lastImage.clientWidth;
+                this.container.insertBefore(lastImage, this.container.firstChild);
+                this.scrollDirection = -1;
+                setTimeout(() => this.startScrolling(), 1000);
+            }
+
+            moveRight() {
+                this.stopScrolling();
+                const firstImage = this.container.querySelector('img');
+                this.container.scrollLeft = firstImage.clientWidth;
+                firstImage.remove();
+                this.container.appendChild(firstImage);
+                this.scrollDirection = 1;
+                setTimeout(() => this.startScrolling(), 1000);
             }
 
             setScrollSpeed(magnitude, frequency) {
@@ -143,7 +205,7 @@
         ]));
 
         // Adjust scroll speed and frequency
-        gallery.setScrollSpeed(2, 25); // Move 10px every 1 second
+        gallery.setScrollSpeed(2, 25); // Move 2px every 25ms
 
     </script>
 </body>
