@@ -1,0 +1,79 @@
+class WeddingHashtags extends HTMLElement {
+            constructor() {
+                super();
+                const shadow = this.attachShadow({ mode: 'open' });
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #ebd4b4;
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                    }
+                    .container {
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(204, 163, 11,1);
+                        text-align: center;
+                    }
+                    h1 {
+                        color: #009c9d;
+                    }
+                    p {
+                        color: #009c9d;
+                    }
+                    ul {
+                        list-style: none;
+                        padding: 0;
+                    }
+                    li {
+                        font-size: 18px;
+                        margin: 10px 0;
+                        color: #009c9d;
+                    }
+                    .hashtag {
+                        font-weight: bold;
+                        color: #009c9d;
+                    }
+                `;
+
+                const container = document.createElement('div');
+                container.setAttribute('class', 'container');
+
+                const title = document.createElement('h1');
+                title.textContent = 'When Sharing Your Photos...';
+
+                const description = document.createElement('p');
+                description.textContent = 'Feel free to these hashtags on social media and join our wedding memories:';
+
+                const ul = document.createElement('ul');
+                const hashtags = [
+                    '#Psalm126:3',
+                    '#HisLoveisCompleteInUs',
+                    '#David&Mathilda2025',
+                    '#LoveMadeIt',
+                    '#DivinelyUnited',
+                    '#ForeveraDuo'
+                ];
+                hashtags.forEach(tag => {
+                    const li = document.createElement('li');
+                    li.setAttribute('class', 'hashtag');
+                    li.textContent = tag;
+                    ul.appendChild(li);
+                });
+
+                container.appendChild(title);
+                container.appendChild(description);
+                container.appendChild(ul);
+                shadow.appendChild(style);
+                shadow.appendChild(container);
+            }
+        }
+
+        customElements.define('wedding-hashtags', WeddingHashtags);
