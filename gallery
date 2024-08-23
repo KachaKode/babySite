@@ -3,12 +3,6 @@ class ImageGallery extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
 
-        /*this.style.display = "block";
-       // this.style.width = "16%"; // Fixed width to 18% of the screen width
-        this.style.height = "400px";
-        this.style.position = "relative";
-        this.style.overflow = "hidden";*/
-
         this.container = document.createElement('div');
         this.container.style.display = 'inline-block';
         this.container.style.whiteSpace = 'nowrap';
@@ -26,6 +20,7 @@ class ImageGallery extends HTMLElement {
             img {
                 height: 100%;
                 vertical-align: top;
+                cursor: pointer;
             }
             .arrow {
                 position: absolute;
@@ -43,6 +38,33 @@ class ImageGallery extends HTMLElement {
             }
             .right-arrow {
                 right: 0;
+            }
+            .modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 20;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .modal.active {
+                visibility: visible;
+                opacity: 1;
+            }
+            .modal-content {
+                max-width: 80%;
+                max-height: 90%;
+            }
+            .modal img {
+                
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
             }
         `;
 
@@ -68,6 +90,15 @@ class ImageGallery extends HTMLElement {
         this.images = [];
         this.scrollInterval = null;
         this.scrollDirection = 1; // 1 for right, -1 for left
+
+        // Modal for enlarged image
+        this.modal = document.createElement('div');
+        this.modal.className = 'modal';
+        this.modal.addEventListener('click', () => this.hideModal());
+        this.modalContent = document.createElement('div');
+        this.modalContent.className = 'modal-content';
+        this.modal.appendChild(this.modalContent);
+        this.shadowRoot.appendChild(this.modal);
     }
 
     static get observedAttributes() {
@@ -105,6 +136,7 @@ class ImageGallery extends HTMLElement {
         this.images.forEach(url => {
             const img = document.createElement('img');
             img.src = url;
+            img.addEventListener('click', () => this.showModal(url)); // Event to show the image in the modal
             fragment.appendChild(img);
         });
 
@@ -157,18 +189,17 @@ class ImageGallery extends HTMLElement {
         this.scrollFrequency = frequency;
         this.startScrolling();
     }
+
+    showModal(imageUrl) {
+        this.stopScrolling();
+        this.modalContent.innerHTML = `<img src="${imageUrl}" alt="Enlarged Image">`;
+        this.modal.classList.add('active');
+    }
+
+    hideModal() {
+        this.modal.classList.remove('active');
+        this.startScrolling();
+    }
 }
 
 customElements.define('image-gallery', ImageGallery);
-
-//const gallery = document.querySelector('image-gallery');
-
-/*gallery.setAttribute('images', JSON.stringify([
-    "https://static.wixstatic.com/media/4d52c3_1b938e64c9b6404b97cb14ada49bb07c~mv2.jpg",
-    "https://static.wixstatic.com/media/4d52c3_549822eb1293493abb55858050df9807~mv2.jpg",
-    "https://static.wixstatic.com/media/4d52c3_292c7fa42553460eb4e289e24c6c278d~mv2.jpg",
-    "https://static.wixstatic.com/media/4d52c3_ff08b197156c461a9280ff66d74b0541~mv2.png",
-    "https://static.wixstatic.com/media/4d52c3_d770b283e91744e1b51b71dfde4b08ef~mv2.jpg"
-]));*/
-
-//gallery.setScrollSpeed(2, 25); // Move 2px every 25ms
