@@ -59,12 +59,33 @@ class ImageGallery extends HTMLElement {
                 opacity: 1;
             }
             .modal-content {
+                position: relative;
                 max-width: 80%;
                 max-height: 90%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             .modal img {
-                
+
                 box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            .modal-arrow {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background-color: rgba(0, 0, 0, 0.5);
+                color: white;
+                border: none;
+                padding: 10px;
+                cursor: pointer;
+                z-index: 30;
+            }
+            .modal-left-arrow {
+                left: 10px;
+            }
+            .modal-right-arrow {
+                right: 10px;
             }
         `;
 
@@ -90,13 +111,36 @@ class ImageGallery extends HTMLElement {
         this.images = [];
         this.scrollInterval = null;
         this.scrollDirection = 1; // 1 for right, -1 for left
+        this.currentIndex = 0; // Index of the currently displayed image in the modal
 
         // Modal for enlarged image
         this.modal = document.createElement('div');
         this.modal.className = 'modal';
-        this.modal.addEventListener('click', () => this.hideModal());
+        this.modal.addEventListener('click', (event) => {
+            if (event.target === this.modal) this.hideModal();
+        });
+
         this.modalContent = document.createElement('div');
         this.modalContent.className = 'modal-content';
+
+        this.modalLeftArrow = document.createElement('button');
+        this.modalLeftArrow.className = 'modal-arrow modal-left-arrow';
+        this.modalLeftArrow.textContent = '◄';
+        this.modalLeftArrow.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.showPreviousImage(false);
+        });
+
+        this.modalRightArrow = document.createElement('button');
+        this.modalRightArrow.className = 'modal-arrow modal-right-arrow';
+        this.modalRightArrow.textContent = '►';
+        this.modalRightArrow.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.showNextImage(false);
+        });
+
+        this.modalContent.appendChild(this.modalLeftArrow);
+        this.modalContent.appendChild(this.modalRightArrow);
         this.modal.appendChild(this.modalContent);
         this.shadowRoot.appendChild(this.modal);
     }
@@ -133,10 +177,10 @@ class ImageGallery extends HTMLElement {
 
         // create images 
         const fragment = document.createDocumentFragment();
-        this.images.forEach(url => {
+        this.images.forEach((url, index) => {
             const img = document.createElement('img');
             img.src = url;
-            img.addEventListener('click', () => this.showModal(url)); // Event to show the image in the modal
+            img.addEventListener('click', () => this.showModal(index)); // Event to show the image in the modal
             fragment.appendChild(img);
         });
 
@@ -169,19 +213,19 @@ class ImageGallery extends HTMLElement {
         }
     }
 
-    moveLeft() {
+    moveLeft(auto=true) {
         const lastImage = this.container.querySelector('img:last-child');
         lastImage.remove();
         this.container.insertBefore(lastImage, this.container.firstChild);
-        setTimeout(() => this.startScrolling(), 1000);
+        if (auto) setTimeout(() => this.startScrolling(), 1000);
     }
 
-    moveRight() {
+    moveRight(auto=true) {
         const firstImage = this.container.querySelector('img');
         firstImage.remove();
         this.container.appendChild(firstImage);
         this.container.scrollLeft = 0;
-        setTimeout(() => this.startScrolling(), 1000);
+        if (auto) setTimeout(() => this.startScrolling(), 1000);
     }
 
     setScrollSpeed(magnitude, frequency) {
@@ -190,15 +234,38 @@ class ImageGallery extends HTMLElement {
         this.startScrolling();
     }
 
-    showModal(imageUrl) {
+    showModal(index) {
         this.stopScrolling();
-        this.modalContent.innerHTML = `<img src="${imageUrl}" alt="Enlarged Image">`;
+        this.currentIndex = index;
+        this.updateModalImage();
         this.modal.classList.add('active');
     }
 
     hideModal() {
         this.modal.classList.remove('active');
         this.startScrolling();
+    }
+
+    showPreviousImage(auto=true) {
+        this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+        this.updateModalImage();
+        this.moveLeft(auto); // Move gallery to left
+    }
+
+    showNextImage(auto=true) {
+        this.currentIndex = (this.currentIndex + 1) % this.images.length;
+        this.updateModalImage();
+        this.moveRight(auto); // Move gallery to right
+    }
+
+    updateModalImage() {
+        const img = document.createElement('img');
+        img.src = this.images[this.currentIndex];
+        img.alt = 'Enlarged Image';
+        this.modalContent.innerHTML = '';
+        this.modalContent.appendChild(this.modalLeftArrow);
+        this.modalContent.appendChild(img);
+        this.modalContent.appendChild(this.modalRightArrow);
     }
 }
 
