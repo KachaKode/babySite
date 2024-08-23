@@ -140,9 +140,11 @@ class ImageGallery extends HTMLElement {
             this.showNextImage(false);
         });
 
-        this.modalContent.appendChild(this.modalLeftArrow);
-        this.modalContent.appendChild(this.modalRightArrow);
+        //this.modal.appendChild(this.modalLeftArrow);
         this.modal.appendChild(this.modalContent);
+        //this.modal.appendChild(this.modalRightArrow);
+        console.log("hiiii this 999 update")
+        
         this.shadowRoot.appendChild(this.modal);
     }
 
@@ -275,9 +277,9 @@ class ImageGallery extends HTMLElement {
         img.src = this.images[this.currentIndex];
         img.alt = 'Enlarged Image';
         this.modalContent.innerHTML = '';
-        this.modalContent.appendChild(this.modalLeftArrow);
+        this.modal.appendChild(this.modalLeftArrow);
         this.modalContent.appendChild(img);
-        this.modalContent.appendChild(this.modalRightArrow);
+        this.modal.appendChild(this.modalRightArrow);
     }
 }
 
