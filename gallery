@@ -3,11 +3,11 @@ class ImageGallery extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
 
-        this.style.display = "block";
+        /*this.style.display = "block";
        // this.style.width = "16%"; // Fixed width to 18% of the screen width
         this.style.height = "400px";
         this.style.position = "relative";
-        this.style.overflow = "hidden";
+        this.style.overflow = "hidden";*/
 
         this.container = document.createElement('div');
         this.container.style.display = 'inline-block';
@@ -78,12 +78,18 @@ class ImageGallery extends HTMLElement {
         if (name === 'images') {
             this.images = JSON.parse(newValue);
             this.updateGallery();
+            this.startScrolling();
+
+            this.style.display = "block";
+            this.style.height = "400px";
+            this.style.position = "relative";
+            this.style.overflow = "hidden";
         }
     }
 
     connectedCallback() {
-        this.updateGallery();
-        this.startScrolling();
+        //this.updateGallery();
+        //this.startScrolling();
     }
 
     disconnectedCallback() {
