@@ -87,6 +87,7 @@ class ImageGallery extends HTMLElement {
             .modal-right-arrow {
                 right: 10px;
             }
+    
         `;
 
         this.shadowRoot.appendChild(style);
@@ -239,11 +240,22 @@ class ImageGallery extends HTMLElement {
         this.currentIndex = index;
         this.updateModalImage();
         this.modal.classList.add('active');
+
+        // Disable background scroll
+        document.querySelector("image-gallery").scrollIntoView({
+            behavior: 'smooth', // This makes the scrolling animation smooth
+            block: 'center',    // This aligns the element vertically to the center
+            inline: 'nearest'   // This keeps horizontal scrolling as close as possible
+        });
+        document.body.style.overflowY = "hidden";
     }
 
     hideModal() {
         this.modal.classList.remove('active');
         this.startScrolling();
+
+        // Re-enable background scroll
+        document.body.style.overflowY = "scroll";
     }
 
     showPreviousImage(auto=true) {
